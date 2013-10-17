@@ -1,0 +1,77 @@
+#!/bin/sh
+
+#
+# keepstate fichier cmd args ....
+#
+# Execute la commande fournie, maintient l'etat (exit code, stdout et
+# stderr) dans le fichier, et signale les modifications.
+#
+# Historique
+#   2006/04/17 : pda : conception
+#   2006/08/20 : pda : utilisation de fichiers dans /local/var par defaut
+#
+
+write_state ()
+{
+    (
+	echo "$2"
+	echo "$3"
+    ) > "$1"
+}
+
+read_state ()
+{
+    if [ -f "$ETAT" ]
+    then
+	ret=`head -n 1 "$1"`
+	tail -n +2 "$1"
+    else
+	ret=0
+    fi
+    return $ret
+}
+
+cd /local/var
+
+case $# in
+    0)
+	echo "usage: `basename $0` file [cmd args...]" >&2
+	R=1
+	;;
+    1)
+	ETAT="$1"
+
+	OLDRES=`read_state "$ETAT"`
+	OLDCODE=$?
+
+	echo "Return code : $OLDCODE"
+	echo "Stdout & stderr:"
+	echo "$OLDRES"
+	R=0
+	;;
+    *)
+	ETAT="$1"
+	CMD="$2"
+	shift 2
+
+	NEWRES=`$CMD "$@" 2>&1`
+	NEWCODE=$?
+
+	OLDRES=`read_state "$ETAT"`
+	OLDCODE=$?
+
+	write_state "$ETAT" "$NEWCODE" "$NEWRES"
+
+	if [ "$NEWCODE/$NEWRES" != "$OLDCODE/$OLDRES" ]
+	then
+	    echo "Command:     $CMD $@"
+	    echo "Return code: $NEWRET"
+	    echo "Stdout & stderr:"
+	    echo "$NEWRES"
+	fi
+
+	R=$NEWCODE
+	;;
+esac
+
+exit $R

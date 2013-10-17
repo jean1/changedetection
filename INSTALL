@@ -1,0 +1,12 @@
+#! /bin/sh
+
+dirlist="etc local"
+for dir in $dirlist ; do
+  dest=/$dir/.gitignore
+  if [ ! -f $dest ] ; then
+    cp -v example/$dir/gitignore $dest
+   fi
+done
+
+mkdir -p /local/var /local/bin /local/etc
+tar cf - bin etc | tar xvf - -C "/local"

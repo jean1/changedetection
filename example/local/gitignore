@@ -1,0 +1,4 @@
+tools-server
+var
+.*.sw?
+fusioninventory-agent

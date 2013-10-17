@@ -1,0 +1,13 @@
+#!/bin/sh
+
+CONF=/local/etc/changedetection.conf
+dirs=`sed -n '/^\/[a-z/]*/p' $CONF`
+
+for d in $dirs ; do
+  if cd $d ; then
+    echo "* git status for $d :"
+    git status -s
+    echo "* git diff for $d :"
+    git diff
+  fi
+done
